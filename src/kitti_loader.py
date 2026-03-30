@@ -18,10 +18,10 @@ def read_calib_file(calib_path: str) -> dict:
             if key.endswith(':'): # Normalize key
                 key = key[:-1]
 
-                # If key starts with 'P', it is a projection matrix, reshape to 3x4
-                # If key is 'R0_rect', it is a rotation (rectification) matrix, reshape to 3x3
-                # If key is 'Tr_velo_to_cam', it is a transformation (LiDAR to Camera 0) matrix, reshape to 3x4
-                arr = np.array(vals, dtype=np.float32)
+            # If key starts with 'P', it is a projection matrix, reshape to 3x4
+            # If key is 'R0_rect', it is a rotation (rectification) matrix, reshape to 3x3
+            # If key is 'Tr_velo_to_cam', it is a transformation (LiDAR to Camera 0) matrix, reshape to 3x4
+            arr = np.array(vals, dtype=np.float32)
             if key.startswith('P'):
                 calib[key] = arr.reshape(3, 4)
             elif key == 'R0_rect':
