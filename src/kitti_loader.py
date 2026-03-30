@@ -14,23 +14,36 @@ def read_calib_file(calib_path: str) -> dict:
     calib = {}
     with open(calib_path) as f:
         for line in f:
-            key, *vals = line.strip().split() # Remove whitespace and split into tokens, take first token as key
-            if key.endswith(':'): # Normalize key
-                key = key[:-1]
+            line = line.strip()
+            if not line:  # skip empty or whitespace-only lines
+                continue
+            # Split on first ':' 
+            if ':' not in line:
+                continue  # safety
+            key_part, value_part = line.split(':', 1)
+            key = key_part.strip()
+            # Get numbers only
+            vals = [float(x) for x in value_part.strip().split() if x]
+            if not vals:
+                continue
 
-            # If key starts with 'P', it is a projection matrix, reshape to 3x4
-            # If key is 'R0_rect', it is a rotation (rectification) matrix, reshape to 3x3
-            # If key is 'Tr_velo_to_cam', it is a transformation (LiDAR to Camera 0) matrix, reshape to 3x4
-            arr = np.array(vals, dtype=np.float32)
-            if key.startswith('P'):
-                calib[key] = arr.reshape(3, 4)
+            if key in ['P0', 'P1', 'P2', 'P3']:
+                calib[key] = np.array(vals, dtype=np.float32).reshape(3, 4)
             elif key == 'R0_rect':
-                calib[key] = arr.reshape(3, 3)
-            else:
-                calib[key] = arr.reshape(3, 4)
-            
-    # Add homogeneous row for Tr_velo_to_cam
-    calib['Tr_velo_to_cam'] = np.vstack((calib['Tr_velo_to_cam'], [0, 0, 0, 1]))
-    calib['R0_rect'] = np.vstack((calib['R0_rect'], [0, 0, 0, 1])) # make 4x4
+                calib[key] = np.array(vals, dtype=np.float32).reshape(3, 3)
+            elif key in ['Tr_velo_to_cam', 'Tr_imu_to_velo']:
+                calib[key] = np.array(vals, dtype=np.float32).reshape(3, 4)
+            # Ignore others like Tr_cam_to_road if present
+
+    # Make homogeneous versions (required for projection math)
+    if 'Tr_velo_to_cam' in calib:
+        Tr = np.eye(4, dtype=np.float32)
+        Tr[:3, :4] = calib['Tr_velo_to_cam']
+        calib['Tr_velo_to_cam'] = Tr
+
+    if 'R0_rect' in calib:
+        R0 = np.eye(4, dtype=np.float32)
+        R0[:3, :3] = calib['R0_rect']
+        calib['R0_rect'] = R0
 
     return calib
