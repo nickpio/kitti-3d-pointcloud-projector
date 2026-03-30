@@ -2,7 +2,7 @@
 
 Implementation with only NumPy to demonstrate core spatial computing skills.
 
-**Tech:** Python, NumPy, Matplotlib
+**Tech:** Python, NumPy, Matplotlib  
 **Dataset:** KITTI 3D Object Detection (raw Velodyne & calib)
 
 ## Quickstart
