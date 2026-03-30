@@ -1,4 +1,4 @@
-# KITTI #D Point-Cloud Projector
+# KITTI 3D Point-Cloud Projector
 
 Implementation with only NumPy to demonstrate core spatial computing skills.
 
